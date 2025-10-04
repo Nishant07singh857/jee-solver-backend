@@ -1,47 +1,61 @@
-# questions.py - Updated with better error handling
-import os, time, json, requests
+# questions.py — stable & production-safe
+# --------------------------------------
+import os, json, requests, logging
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, HTTPException, Query, Body
-from pydantic import BaseModel, Field
-import logging
+from pydantic import BaseModel
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# Firebase Admin SDK Imports
-import firebase_admin
-from firebase_admin import credentials, firestore
-
-# --- Firebase Initialization ---
-if not firebase_admin._apps:
-    try:
-        # Initialize Firebase with the provided config
-        cred = credentials.ApplicationDefault()
-        firebase_admin.initialize_app(cred, {
-            'projectId': os.getenv('NEXT_PUBLIC_FIREBASE_PROJECT_ID', 'ai-powerd-jee-learn')
-        })
-        logger.info("✅ Firebase App Initialized Successfully.")
-    except Exception as e:
-        logger.warning(f"⚠️ WARNING: Could not initialize Firebase Admin. Error: {e}")
-
-# Get a reference to the Firestore database client
+# Optional: load .env if you use python-dotenv (safe if missing)
 try:
-    db = firestore.client()
-    logger.info("✅ Firestore client initialized successfully.")
-except Exception as e:
-    db = None
-    logger.warning(f"⚠️ WARNING: Could not initialize Firestore client: {e}")
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
 
+# ---------- Logging ----------
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("questions")
+
+# ---------- Firebase (optional) ----------
+db = None
+try:
+    import firebase_admin
+    from firebase_admin import credentials, firestore
+
+    if not firebase_admin._apps:
+        try:
+            cred = credentials.ApplicationDefault()
+            firebase_admin.initialize_app(cred, {
+                "projectId": os.getenv("NEXT_PUBLIC_FIREBASE_PROJECT_ID", "ai-powerd-jee-learn")
+            })
+            logger.info("✅ Firebase App initialized.")
+        except Exception as e:
+            logger.warning(f"⚠️ Firebase init skipped: {e}")
+
+    try:
+        db = firestore.client()
+        logger.info("✅ Firestore client ready.")
+    except Exception as e:
+        logger.warning(f"⚠️ Firestore unavailable: {e}")
+        db = None
+except Exception as e:
+    logger.warning(f"⚠️ Firebase modules not loaded: {e}")
+    db = None
+
+# ---------- Router ----------
 router = APIRouter(tags=["questions"])
 
-# ---------- NTA syllabus (expand anytime) ----------
+# ---------- Constants ----------
+GEMINI_MODEL_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent"
+
 NTA_SYLLABUS: Dict[str, List[str]] = {
     "Physics": [
         "Units and Measurements","Kinematics","Laws of Motion","Work Energy Power",
-        "Rotational Motion","Gravitation","Thermodynamics","Kinetic Theory",
-        "Waves","Electrostatics","Current Electricity","Magnetism",
-        "EM Induction and AC","Optics","Modern Physics"
+        "Rotational Motion","Gravitation","Thermodynamics","Kinetic Theory","Waves",
+        "Electrostatics","Current Electricity","Magnetism","EM Induction and AC",
+        "Optics","Modern Physics"
     ],
     "Chemistry": [
         "Some Basic Concepts of Chemistry","Atomic Structure","Chemical Bonding",
@@ -59,17 +73,10 @@ NTA_SYLLABUS: Dict[str, List[str]] = {
     ],
 }
 
-def _get_gemini_key() -> str:
-    key = os.getenv("GEMINI_API_KEY")
-    if not key:
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY is not set on backend")
-    return key
-
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent"
-
+# ---------- Models ----------
 class GenerateRequest(BaseModel):
     subject: str
-    mode: str # 'quick', 'topic', or 'full'
+    mode: str  # 'quick' | 'topic' | 'full'
     topic: Optional[str] = None
 
 class ProgressRequest(BaseModel):
@@ -77,61 +84,106 @@ class ProgressRequest(BaseModel):
     isCorrect: bool
     isBookmarked: bool
 
-class ExplanationRequest(BaseModel):
-    question: str
-    options: List[str]
-    correctAnswer: str
-    userAnswer: str
+# ---------- Helpers ----------
+def _get_key() -> str:
+    key = os.getenv("GEMINI_API_KEY")
+    if not key:
+        raise HTTPException(status_code=500, detail="GEMINI_API_KEY is not set on backend")
+    return key
+
+# resilient HTTP session with retries/backoff
+SESSION = requests.Session()
+SESSION.headers.update({"Content-Type": "application/json"})
+SESSION.mount(
+    "https://",
+    HTTPAdapter(
+        max_retries=Retry(
+            total=4,
+            backoff_factor=1.3,  # 1.3s, 2.6s, 5.2s, ...
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods={"POST", "GET"},
+            raise_on_status=False,
+        )
+    ),
+)
 
 def _prompt(subject: str, topic: Optional[str], count: int) -> str:
-    topic_line = f" on the specific topic of '{topic}'" if topic and topic != "random" else " covering various important topics from the entire syllabus"
-    return f"""
-You are an expert question creator for the Indian JEE Mains engineering entrance exam.
-Your primary directive is to generate {count} new, completely original, high-quality multiple-choice questions (MCQs).
+    topic_line = (
+        f" on the specific topic '{topic}'"
+        if topic and topic != "random"
+        else " covering key topics from the official NTA syllabus"
+    )
+    return f"""You are an expert question creator for the Indian JEE Mains exam.
 
-**Strict Instructions:**
-1.  **Syllabus Adherence:** The questions MUST strictly adhere to the latest official NTA syllabus for JEE Mains for the subject '{subject}'.
-2.  **Uniqueness:** Each question must be unique.
-3.  **Format:** Provide the output ONLY in a valid JSON array format. Do not add any text, comments, or markdown formatting like ```json.
-4.  **JSON Structure:** Each object in the array must have these exact keys: "question", "options" (an array of 4 strings), "answer_index" (a number from 0 to 3), "hint", "explanation", and "topic".
+Generate {count} original MCQs for {subject}{topic_line}.
 
-Generate a JSON array of exactly {count} questions for {subject}{topic_line} now.
-""".strip()
+Strict rules:
+- Follow the latest NTA syllabus; ensure correctness.
+- Each item must be a JSON object with keys EXACTLY:
+  "question", "options" (array of 4 strings), "answer_index" (0..3),
+  "hint", "explanation", "topic".
+- Output ONLY a valid JSON array (no extra text or markdown, no code fences)."""
 
-def _call_gemini(prompt: str) -> List[Dict[str, Any]]:
-    payload = {"contents": [{"parts": [{"text": prompt}]}]}
-    url = f"{GEMINI_URL}?key={_get_gemini_key()}"
+def _gemini_call(prompt: str, timeout_sec: int = 180) -> dict:
+    url = f"{GEMINI_MODEL_URL}?key={_get_key()}"
     try:
-        r = requests.post(url, json=payload, timeout=90)
-        r.raise_for_status()
+        resp = SESSION.post(url, json={"contents":[{"parts":[{"text": prompt}]}]}, timeout=timeout_sec)
+        resp.raise_for_status()
+        return resp.json()
+    except requests.exceptions.Timeout:
+        logger.error("Gemini timeout")
+        raise HTTPException(status_code=504, detail="AI timed out, please try again")
     except requests.exceptions.RequestException as e:
-        raise HTTPException(status_code=502, detail=f"AI connection error: {str(e)}")
+        logger.error(f"Gemini connection error: {e}")
+        raise HTTPException(status_code=502, detail=f"AI connection error: {e}")
 
-    data = r.json()
-    try:
-        text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
-        if text.startswith("```"): text = text.strip("` \njson")
-        items = json.loads(text)
-        if not isinstance(items, list): raise ValueError("Response is not a JSON array")
-        return items
-    except (KeyError, IndexError, json.JSONDecodeError, ValueError) as e:
-        raise HTTPException(status_code=502, detail=f"AI parse error: {e} | Response was: {text}")
+def _extract_text(ai_json: dict) -> str:
+    text = (
+        ai_json.get("candidates", [{}])[0]
+        .get("content", {})
+        .get("parts", [{}])[0]
+        .get("text", "")
+        .strip()
+    )
+    # Strip common code-fence wrappers if model added them
+    if text.startswith("```"):
+        # remove fences like ```json ... ```
+        text = text.strip().strip("`")
+        text = text.replace("json", "", 1).strip()
+    return text
 
-def _call_gemini_single(prompt: str) -> str:
-    """Helper function to call Gemini for single text response"""
-    payload = {"contents": [{"parts": [{"text": prompt}]}]}
-    url = f"{GEMINI_URL}?key={_get_gemini_key()}"
-    
+def _to_questions(text: str) -> List[Dict[str, Any]]:
     try:
-        r = requests.post(url, json=payload, timeout=30)
-        r.raise_for_status()
-        data = r.json()
-        text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
-        return text
+        data = json.loads(text)
+        if not isinstance(data, list):
+            raise ValueError("Not a JSON array")
+        return data
     except Exception as e:
-        logger.error(f"Gemini API error: {e}")
-        return "Explanation not available at the moment."
+        logger.error(f"Parse error: {e} | head: {text[:300]}")
+        raise HTTPException(status_code=502, detail="AI returned malformed JSON")
 
+def _normalize(items: List[Dict[str, Any]], subject: str, fallback_topic: Optional[str]) -> List[Dict[str, Any]]:
+    cleaned = []
+    for q in items:
+        try:
+            ai = int(q["answer_index"])
+            opts = q["options"]
+            cleaned.append({
+                "id": None,
+                "subject": subject,
+                "topic": q.get("topic", fallback_topic or "Mixed"),
+                "question": q["question"],
+                "options": opts,
+                "answer_index": ai,
+                "correctAnswer": opts[ai],
+                "hint": q.get("hint", "No hint available."),
+                "explanation": q.get("explanation", "No explanation available.")
+            })
+        except Exception as e:
+            logger.warning(f"Skipping malformed item: {e}")
+    return cleaned
+
+# ---------- Endpoints ----------
 @router.get("/topics")
 def list_topics(subject: str = Query(..., pattern="^(Physics|Chemistry|Maths)$")):
     return {"subject": subject, "topics": NTA_SYLLABUS.get(subject, [])}
@@ -141,97 +193,73 @@ def generate_quiz(req: GenerateRequest):
     subject = req.subject
     mode = req.mode
 
-    if mode == "topic" and (not req.topic or req.topic not in NTA_SYLLABUS.get(subject, [])):
+    if subject not in NTA_SYLLABUS:
+        raise HTTPException(status_code=400, detail="Invalid subject")
+
+    if mode == "topic" and (not req.topic or req.topic not in NTA_SYLLABUS[subject]):
         raise HTTPException(status_code=400, detail="A valid topic is required for topic-wise mode")
-    
-    count = 5 if mode == "quick" else 30 if mode == "full" else 10
 
-    prompt = _prompt(subject, req.topic, count)
-    items = _call_gemini(prompt)
+    target = 5 if mode == "quick" else 30 if mode == "full" else 10
+    batch = 5  # generate in small chunks to avoid timeouts
+    out: List[Dict[str, Any]] = []
 
-    cleaned = []
-    for q in items[:count]:
+    while len(out) < target:
+        need = min(batch, target - len(out))
+        prompt = _prompt(subject, req.topic, need)
+        ai_json = _gemini_call(prompt)         # retries + long timeout inside
+        text = _extract_text(ai_json)
+        items = _to_questions(text)
+        out.extend(_normalize(items[:need], subject, req.topic))
+
+        if len(out) == 0:
+            # safety: if model fails to follow JSON, break to avoid loop
+            raise HTTPException(status_code=502, detail="AI returned unusable data. Please try again.")
+
+    # Optional Firestore save (best-effort)
+    if db:
         try:
-            answer_index = int(q["answer_index"])
-            cleaned.append({
-                "id": None, # We will fill this with the real Firestore ID later
-                "subject": subject, "topic": q.get("topic", req.topic or "Mixed"),
-                "question": q["question"], "options": q["options"], "answer_index": answer_index,
-                "correctAnswer": q["options"][answer_index],
-                "hint": q.get("hint", "No hint available."), "explanation": q.get("explanation", "No explanation available.")
-            })
+            col = db.collection("questions")
+            for q in out:
+                ref = col.document()
+                q["id"] = ref.id
+                ref.set(q)
+            logger.info(f"✅ Saved {len(out)} questions to Firestore.")
         except Exception as e:
-            logger.error(f"Skipping malformed AI item: {e}")
-            continue
+            logger.warning(f"Firestore save skipped: {e}")
 
-    if not cleaned:
-        raise HTTPException(status_code=502, detail="AI generated malformed data. Please try again.")
-    
-    # --- START: New Firebase Saving Logic ---
-    if db: # Check if Firestore was initialized successfully
-        logger.info(f"Saving {len(cleaned)} questions to Firestore...")
-        questions_collection = db.collection("questions")
-        try:
-            for question_data in cleaned:
-                # Let Firestore create a new document with an automatic ID
-                doc_ref = questions_collection.document()
-                # Update the 'id' in our list with the real ID from Firestore
-                question_data['id'] = doc_ref.id
-                # Save the complete question data to the document
-                doc_ref.set(question_data)
-            logger.info(f"✅ Successfully saved {len(cleaned)} questions to Firestore.")
-        except Exception as e:
-            # If saving fails, we just print an error but don't stop the user from getting their quiz.
-            logger.error(f"❌ ERROR: Could not save questions to Firestore: {e}")
-    # --- END: New Firebase Saving Logic ---
+    return {
+        "questions": out,
+        "quizTitle": f"{subject} - {mode.title()} Practice",
+        "message": "Quiz generated successfully!"
+    }
 
-    return {"questions": cleaned, "quizTitle": f"{subject} - {mode.replace('_', ' ').title()} Practice"}
+@router.post("/generate-explanation")
+def generate_explanation(payload: Dict[str, Any] = Body(...)):
+    question = payload.get("question")
+    options = payload.get("options", [])
+    correct_answer = payload.get("correctAnswer")
+    user_answer = payload.get("userAnswer", "")
+
+    if not question or not options or correct_answer is None:
+        return {"explanation": "Missing required fields."}
+
+    prompt = f"""
+Explain clearly why the correct answer is "{correct_answer}" for the following MCQ.
+Question: {question}
+Options:
+{chr(10).join([f"{i+1}. {opt}" for i, opt in enumerate(options)])}
+User selected: "{user_answer if user_answer else 'No answer'}"
+Provide a short, JEE-Mains-level explanation: concept, why correct is correct, and why wrong options are wrong.
+""".strip()
+
+    try:
+        ai_json = _gemini_call(prompt, timeout_sec=120)
+        text = _extract_text(ai_json)
+        return {"explanation": text or "Explanation temporarily unavailable."}
+    except HTTPException:
+        return {"explanation": "Explanation temporarily unavailable. Please try again."}
 
 @router.post("/record-progress")
 def record_progress(req: ProgressRequest):
-    """Placeholder for progress tracking"""
+    # placeholder
     return {"status": "success", "message": "Progress recorded (demo mode)"}
-
-@router.post("/generate-explanation")
-async def generate_explanation(request: dict = Body(...)):
-    """Generate AI explanation for a question - handles both Pydantic model and raw dict"""
-    try:
-        # Extract data from request - handle both Pydantic model and raw dict
-        if isinstance(request, dict):
-            question = request.get("question")
-            options = request.get("options", [])
-            correct_answer = request.get("correctAnswer")
-            user_answer = request.get("userAnswer", "")
-        else:
-            # This handles the case where FastAPI converts to Pydantic model
-            question = request.question
-            options = request.options
-            correct_answer = request.correctAnswer
-            user_answer = request.userAnswer
-        
-        # Validate required fields
-        if not question or not options or not correct_answer:
-            logger.warning("Missing required fields in explanation request")
-            return {"explanation": "Missing required question data."}
-        
-        prompt = f"""
-        Explain why the correct answer is "{correct_answer}" for this question:
-        
-        Question: {question}
-        
-        Options:
-        {chr(10).join([f"{i+1}. {opt}" for i, opt in enumerate(options)])}
-        
-        The user answered: "{user_answer if user_answer else 'No answer provided'}"
-        
-        Provide a detailed, educational explanation suitable for JEE Mains preparation.
-        Explain the concept, why the correct answer is right, and why the user's answer (if wrong) is incorrect.
-        """
-        
-        explanation = _call_gemini_single(prompt)
-        return {"explanation": explanation}
-    
-    except Exception as e:
-        logger.error(f"Error generating explanation: {e}")
-        correct_answer = request.get("correctAnswer", "the correct option") if isinstance(request, dict) else getattr(request, "correctAnswer", "the correct option")
-        return {"explanation": f"Correct answer: {correct_answer}. This question tests important concepts for JEE Mains. Review the related topic for better understanding."}
