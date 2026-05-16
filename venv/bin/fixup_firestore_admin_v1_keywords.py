@@ -1,4 +1,4 @@
-#!/Users/nishantsingh/Downloads/jee-solver-app-2/backend/venv/bin/python
+#!/Users/nishantsingh/Downloads/jee-solver-app-2/backend/venv/bin/python3.11
 # -*- coding: utf-8 -*-
 # Copyright 2025 Google LLC
 #

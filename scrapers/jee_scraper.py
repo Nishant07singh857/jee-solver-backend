@@ -47,7 +47,6 @@ def find_latest_jee_pdf_link(base_url="https://nta.ac.in/Downloads"):
 def download_pdf(url, save_path="temp_paper.pdf"):
     """
     English: Downloads a PDF file from a URL.
-    Hinglish: URL se ek PDF file download karta hai.
     """
     if not url:
         print("No URL provided for download.")

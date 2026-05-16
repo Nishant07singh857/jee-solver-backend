@@ -43,10 +43,32 @@ class LLMService:
             }]
         }
         
+        # Load Balancing: Groq Fallback
+        import random
+        groq_key = os.getenv("GROQ_API_KEY")
+        use_groq = bool(groq_key) and random.choice([True, False])
+        
+        if use_groq:
+            try:
+                url = "https://api.groq.com/openai/v1/chat/completions"
+                headers = {"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"}
+                groq_payload = {
+                    "model": "llama-3.3-70b-versatile",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "temperature": 0.7
+                }
+                resp = requests.post(url, headers=headers, json=groq_payload, timeout=60)
+                resp.raise_for_status()
+                data = resp.json()
+                solution_text = data.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+                return {"status": "success", "solution": solution_text}
+            except Exception as e:
+                print(f"Groq failed, falling back to Gemini: {e}")
+        
         try:
             # English: We make a POST request to the Gemini API.
             # Hinglish: Hum Gemini API ko ek POST request bhejte hain.
-            response = requests.post(GEMINI_API_URL, json=payload)
+            response = requests.post(GEMINI_API_URL, json=payload, timeout=60)
             response.raise_for_status()  # Raise an exception for bad status codes
             
             result = response.json()
