@@ -12294,3 +12294,117 @@ Progress: 121/1000
 ❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99853, Requested 150. Please try again in 2.592s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
 
 ❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Physics (Laws of Motion) question via Groq Cloud...
+✅ Question generated and saved to Local Dataset & Firebase!
+Progress: 122/1000
+
+☁️ Generating 1 Chemistry (Hydrocarbons) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99997, Requested 859. Please try again in 12m19.584s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Chemistry (Equilibrium) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99994, Requested 735. Please try again in 10m29.856s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Chemistry (Equilibrium) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99992, Requested 857. Please try again in 12m13.536s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Physics (Kinematics) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99989, Requested 735. Please try again in 10m25.536s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Physics (Optics) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99986, Requested 857. Please try again in 12m8.352s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Chemistry (Atomic Structure) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99983, Requested 857. Please try again in 12m5.76s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Physics (Magnetism) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99980, Requested 736. Please try again in 10m18.624s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Chemistry (Equilibrium) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99977, Requested 857. Please try again in 12m0.576s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Maths (Probability) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99974, Requested 1948. Please try again in 27m40.608s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Physics (Rotational Motion) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99971, Requested 1950. Please try again in 27m39.744s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Physics (Rotational Motion) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99968, Requested 858. Please try again in 11m53.664s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Physics (Rotational Motion) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99965, Requested 858. Please try again in 11m51.072s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Maths (Probability) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99961, Requested 734. Please try again in 10m0.48s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Maths (Matrices) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99957, Requested 1949. Please try again in 27m26.784s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Chemistry (Equilibrium) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99953, Requested 857. Please try again in 11m39.839999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Physics (Electrostatics) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99950, Requested 859. Please try again in 11m38.976s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Physics (Laws of Motion) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99946, Requested 737. Please try again in 9m50.112s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Chemistry (Redox Reactions) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99942, Requested 150. Please try again in 1m19.488s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Physics (Magnetism) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99939, Requested 858. Please try again in 11m28.608s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Chemistry (Hydrocarbons) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99936, Requested 859. Please try again in 11m26.88s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Chemistry (Atomic Structure) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99933, Requested 857. Please try again in 11m22.56s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
+
+☁️ Generating 1 Physics (Electrostatics) question via Groq Cloud...
+❌ Groq API Error: {"error":{"message":"Rate limit reached for model `llama-3.3-70b-versatile` in organization `org_01krsabbeaewav7skdq5ken87r` service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 99930, Requested 150. Please try again in 1m9.12s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+❌ Failed to generate/parse: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions
