@@ -3,3 +3,8 @@ __pycache__/
 node_modules/
 *.log
 *.jsonl
+
+.env
+.env.local
+.DS_Store
+faiss_index/

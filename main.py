@@ -23,7 +23,7 @@ except Exception as e:
 
 app = FastAPI(title="JEE Solver API")
 
-from app.api.v1.endpoints import questions, solutions, auth, progress, ml, mentor, examiner, users
+from app.api.v1.endpoints import questions, solutions, auth, progress, ml, mentor, examiner, users, rag_features
 
 app.add_middleware(
     CORSMiddleware,
@@ -41,6 +41,7 @@ app.include_router(ml.router, prefix="/api/v1/ml", tags=["ML Analysis"])
 app.include_router(mentor.router, prefix="/api/v1/mentor", tags=["Mentor"])
 app.include_router(examiner.router, prefix="/api/v1/examiner", tags=["Examiner"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
+app.include_router(rag_features.router, prefix="/api/v1/rag", tags=["RAG Features"])
 
 @app.get("/")
 def root():

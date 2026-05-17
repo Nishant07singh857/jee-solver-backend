@@ -4,6 +4,21 @@ import google.generativeai as genai
 import os
 from firebase_admin import firestore
 
+# RAG Imports
+try:
+    from langchain_community.vectorstores import FAISS
+    from langchain_huggingface import HuggingFaceEmbeddings
+    
+    FAISS_INDEX_PATH = "faiss_index"
+    print("🤖 Loading offline FAISS Brain into RAM for AI Mentor...")
+    # allow_dangerous_deserialization is required for local trusted FAISS indexes in recent versions
+    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    rag_brain = FAISS.load_local(FAISS_INDEX_PATH, embeddings, allow_dangerous_deserialization=True)
+    print("✅ RAG Brain (FAISS) loaded successfully!")
+except Exception as e:
+    print(f"⚠️ FAISS Brain not loaded. AI will run without RAG. Error: {e}")
+    rag_brain = None
+
 router = APIRouter()
 
 class VoiceQuery(BaseModel):
@@ -29,6 +44,18 @@ async def ask_mentor(request: VoiceQuery):
                 if memory:
                     memory_context = f"\n\nStudent's Past Weaknesses & Memory: {memory}. Address them if relevant."
 
+        # Fetch RAG Context from FAISS Book Index
+        rag_context = ""
+        if rag_brain:
+            try:
+                # Fetch top 2 most relevant paragraphs from the 4000+ page textbook brain
+                docs = rag_brain.similarity_search(request.query, k=2)
+                if docs:
+                    context_text = "\n".join([doc.page_content for doc in docs])
+                    rag_context = f"\n\n[OFFICIAL TEXTBOOK REFERENCE]\n{context_text}\n\n(Use the above official textbook reference to answer the student accurately if relevant.)"
+            except Exception as e:
+                print(f"⚠️ RAG Search Error: {e}")
+
         genai.configure(api_key=gemini_key)
         model = genai.GenerativeModel("gemini-2.5-flash")
         
@@ -39,7 +66,7 @@ async def ask_mentor(request: VoiceQuery):
             "Explain complex concepts simply, like a friendly Indian elder brother/mentor. "
             "Keep the answer under 3-4 short sentences. Make it suitable for text-to-speech. "
             "No markdown, no complex symbols. End with an encouraging note in Hinglish like 'Phod denge exam!'."
-        ) + memory_context
+        ) + memory_context + rag_context
         
         response = model.generate_content(f"{system_prompt}\n\nStudent Query: {request.query}")
         
